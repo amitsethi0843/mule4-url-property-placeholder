@@ -1,26 +1,51 @@
 package com.centric.mule4.api;
 
 import static java.lang.String.format;
-import static org.mule.runtime.api.i18n.I18nMessageFactory.createStaticMessage;
+import static java.lang.String.join;
+import static java.util.Optional.of;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
 
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.config.api.dsl.model.ResourceProvider;
+import org.mule.runtime.config.api.dsl.model.properties.ConfigurationProperty;
 import org.mule.runtime.config.api.dsl.model.properties.DefaultConfigurationPropertiesProvider;
-import org.mule.runtime.config.internal.dsl.model.config.ConfigurationPropertiesException;
+import org.mule.runtime.config.internal.dsl.model.config.DefaultConfigurationProperty;
+import org.yaml.snakeyaml.Yaml;
 
 public class CustomConfigurationPropertiesProvider extends DefaultConfigurationPropertiesProvider {
 
+	  protected static final String PROPERTIES_EXTENSION = ".properties";
+	  protected static final String YAML_EXTENSION = ".yaml";
+	  protected static final String UNKNOWN = "unknown";
+	  
+	  protected final Map<String, ConfigurationProperty> configurationAttributes = new HashMap<>();
+	  protected String fileLocation;
+	  protected ResourceProvider resourceProvider;
+
+	  
 	public CustomConfigurationPropertiesProvider(String fileLocation, ResourceProvider resourceProvider) {
-		super(fileLocation, resourceProvider);
+		super(fileLocation,resourceProvider);
+		this.fileLocation=fileLocation;
+		this.resourceProvider=resourceProvider;
 		// TODO Auto-generated constructor stub
 	}
+	
+	@Override
+	  public Optional<ConfigurationProperty> getConfigurationProperty(String configurationAttributeKey) {
+	    return Optional.ofNullable(configurationAttributes.get(configurationAttributeKey));
+	  }
+
 
 	@Override
 	 public void initialise() throws InitialisationException{
@@ -31,7 +56,7 @@ public class CustomConfigurationPropertiesProvider extends DefaultConfigurationP
 		      if (is == null) {
 		        throw new RuntimeException("Couldn't find configuration properties file neither on classpath or in file system");
 		      }
-		      super.readAttributesFromFile(is);
+		      readAttributesFromFile(is);
 		    } 
 		     catch (Exception ex) {
 		     System.out.println(ex.getMessage());
@@ -60,4 +85,65 @@ public class CustomConfigurationPropertiesProvider extends DefaultConfigurationP
 	    return new File(file).isAbsolute();
 	  }
 
+	
+	protected void readAttributesFromFile(InputStream is) throws IOException {
+	    if (fileLocation.endsWith(PROPERTIES_EXTENSION)) {
+	      Properties properties = new Properties();
+	      properties.load(is);
+	      properties.keySet().stream().map(key -> {
+	        Object rawValue = properties.get(key);
+	        rawValue = createValue((String) key, (String) rawValue);
+	        return new DefaultConfigurationProperty(of(this), (String) key, rawValue);
+	      }).forEach(configurationAttribute -> {
+	        configurationAttributes.put(configurationAttribute.getKey(), configurationAttribute);
+	      });
+	    } else {
+	      Yaml yaml = new Yaml();
+	      Iterable<Object> yamlObjects = yaml.loadAll(is);
+	      yamlObjects.forEach(yamlObject -> {
+	        createAttributesFromYamlObject(null, null, yamlObject);
+	      });
+	    }
+	  }
+
+	  protected void createAttributesFromYamlObject(String parentPath, Object parentYamlObject, Object yamlObject) {
+	    if (yamlObject instanceof List) {
+	      List list = (List) yamlObject;
+	      if (list.get(0) instanceof Map) {
+	        list.forEach(value -> createAttributesFromYamlObject(parentPath, yamlObject, value));
+	      } else {
+	        if (!(list.get(0) instanceof String)) {
+	          throw new RuntimeException("List of complex objects are not supported as property values. Offending key is ");
+	        }
+	        String[] values = new String[list.size()];
+	        list.toArray(values);
+	        String value = join(",", list);
+	        configurationAttributes.put(parentPath, new DefaultConfigurationProperty(this, parentPath, value));
+	      }
+	    } else if (yamlObject instanceof Map) {
+	      if (parentYamlObject instanceof List) {
+	        throw new RuntimeException("Configuration properties does not support type a list of complex types. Complex type keys are: ");
+	      }
+	      Map<String, Object> map = (Map) yamlObject;
+	      map.entrySet().stream()
+	          .forEach(entry -> createAttributesFromYamlObject(createKey(parentPath, entry.getKey()), yamlObject, entry.getValue()));
+	    } else {
+	      if (!(yamlObject instanceof String)) {
+	        throw new RuntimeException("YAML configuration properties only supports string values, make sure to wrap the value with so you force the value to be an string.");
+	      }
+	      String resultObject = createValue(parentPath, (String) yamlObject);
+	      configurationAttributes.put(parentPath, new DefaultConfigurationProperty(this, parentPath, resultObject));
+	    }
+	  }
+
+	  protected String createKey(String parentKey, String key) {
+	    if (parentKey == null) {
+	      return key;
+	    }
+	    return parentKey + "." + key;
+	  }
+
+	  protected String createValue(String key, String value) {
+	    return value;
+	  }
 }

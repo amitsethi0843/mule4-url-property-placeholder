@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.centric.mule4</groupId>
     <artifactId>url-properties-placeholder</artifactId>
-    <version>2.0.5-SNAPSHOT</version>
+    <version>2.1.2-SNAPSHOT</version>
     <packaging>mule-extension</packaging>
     <name>Basic Extension</name>
 
@@ -23,6 +23,11 @@
             <version>${mule.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+		    <groupId>org.yaml</groupId>
+		    <artifactId>snakeyaml</artifactId>
+		    <version>1.18</version>            
+		</dependency>
     </dependencies>
 
     <repositories>

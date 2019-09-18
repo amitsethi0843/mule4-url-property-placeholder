@@ -12,11 +12,12 @@
     "id": "mule",
     "attributes": {
       "exportedPackages": [
-        "com.centric.mule4.api",
-        "org.mule.runtime.config.api.dsl"
-      ],
+       "com.centric.mule4.api",
+       "org.yaml.snakeyaml"
+       ],
       "exportedResources": [
-        "META-INF/services/org.mule.runtime.config.api.dsl.model.properties.ConfigurationPropertiesProviderFactory"
+        "META-INF/services/org.mule.runtime.config.api.dsl.model.properties.ConfigurationPropertiesProviderFactory",
+        "META-INF/services/org.mule.runtime.config.api.dsl.model.properties.DefaultConfigurationPropertiesProvider"
       ]
     }
   },
