@@ -3,9 +3,9 @@ To use this :-
 2) Run mvn clean install
 3) Inject it in your application 
 
-<dependency>
+     <dependency>
             <groupId>com.centric.mule4</groupId>
             <artifactId>url-properties-placeholder</artifactId>
             <version>2.5.0-SNAPSHOT</version>
             <classifier>mule-plugin</classifier>
-        </dependency>
+      </dependency>
