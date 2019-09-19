@@ -15,12 +15,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.mule.runtime.api.component.Component;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.config.api.dsl.model.ResourceProvider;
 import org.mule.runtime.config.api.dsl.model.properties.ConfigurationProperty;
 import org.mule.runtime.config.api.dsl.model.properties.DefaultConfigurationPropertiesProvider;
-import org.mule.runtime.config.internal.dsl.model.config.DefaultConfigurationProperty;
 import org.yaml.snakeyaml.Yaml;
 
 public class CustomConfigurationPropertiesProvider extends DefaultConfigurationPropertiesProvider {
@@ -146,4 +146,44 @@ public class CustomConfigurationPropertiesProvider extends DefaultConfigurationP
 	  protected String createValue(String key, String value) {
 	    return value;
 	  }
+	  
+	  
+	  public class DefaultConfigurationProperty implements ConfigurationProperty {
+
+		  private Object source;
+		  private Object rawValue;
+		  private String key;
+
+		  /**
+		   * Creates a new configuration value
+		   *
+		   * @param source the source of this configuration attribute. For instance, it may be an {@link Component} if it's source was
+		   *        defined in the artifact configuration or it may be the deployment properties configured at deployment time.
+		   * @param key the key of the configuration attribute to reference it.
+		   * @param rawValue the plain configuration value without resolution. A configuration value may contain reference to other
+		   *        configuration attributes.
+		   */
+		  public DefaultConfigurationProperty(Object source, String key, Object rawValue) {
+		    this.source = source;
+		    this.rawValue = rawValue;
+		    this.key = key;
+		  }
+
+
+		  @Override
+		  public Object getSource() {
+		    return source;
+		  }
+
+		  @Override
+		  public Object getRawValue() {
+		    return rawValue;
+		  }
+
+		  @Override
+		  public String getKey() {
+		    return key;
+		  }
+
+		}
 }
