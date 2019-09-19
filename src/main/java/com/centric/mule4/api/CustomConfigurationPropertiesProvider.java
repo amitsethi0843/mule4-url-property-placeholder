@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.mule.runtime.api.component.Component;
 import org.mule.runtime.api.component.location.ComponentLocation;
 import org.mule.runtime.api.lifecycle.InitialisationException;
 import org.mule.runtime.config.api.dsl.model.ResourceProvider;
@@ -93,7 +92,7 @@ public class CustomConfigurationPropertiesProvider extends DefaultConfigurationP
 	      properties.keySet().stream().map(key -> {
 	        Object rawValue = properties.get(key);
 	        rawValue = createValue((String) key, (String) rawValue);
-	        return new DefaultConfigurationProperty(of(this), (String) key, rawValue);
+	        return new CustomConfigurationProperty(of(this), (String) key, rawValue);
 	      }).forEach(configurationAttribute -> {
 	        configurationAttributes.put(configurationAttribute.getKey(), configurationAttribute);
 	      });
@@ -118,7 +117,7 @@ public class CustomConfigurationPropertiesProvider extends DefaultConfigurationP
 	        String[] values = new String[list.size()];
 	        list.toArray(values);
 	        String value = join(",", list);
-	        configurationAttributes.put(parentPath, new DefaultConfigurationProperty(this, parentPath, value));
+	        configurationAttributes.put(parentPath, new CustomConfigurationProperty(this, parentPath, value));
 	      }
 	    } else if (yamlObject instanceof Map) {
 	      if (parentYamlObject instanceof List) {
@@ -132,7 +131,7 @@ public class CustomConfigurationPropertiesProvider extends DefaultConfigurationP
 	        throw new RuntimeException("YAML configuration properties only supports string values, make sure to wrap the value with so you force the value to be an string.");
 	      }
 	      String resultObject = createValue(parentPath, (String) yamlObject);
-	      configurationAttributes.put(parentPath, new DefaultConfigurationProperty(this, parentPath, resultObject));
+	      configurationAttributes.put(parentPath, new CustomConfigurationProperty(this, parentPath, resultObject));
 	    }
 	  }
 
@@ -148,42 +147,5 @@ public class CustomConfigurationPropertiesProvider extends DefaultConfigurationP
 	  }
 	  
 	  
-	  public class DefaultConfigurationProperty implements ConfigurationProperty {
-
-		  private Object source;
-		  private Object rawValue;
-		  private String key;
-
-		  /**
-		   * Creates a new configuration value
-		   *
-		   * @param source the source of this configuration attribute. For instance, it may be an {@link Component} if it's source was
-		   *        defined in the artifact configuration or it may be the deployment properties configured at deployment time.
-		   * @param key the key of the configuration attribute to reference it.
-		   * @param rawValue the plain configuration value without resolution. A configuration value may contain reference to other
-		   *        configuration attributes.
-		   */
-		  public DefaultConfigurationProperty(Object source, String key, Object rawValue) {
-		    this.source = source;
-		    this.rawValue = rawValue;
-		    this.key = key;
-		  }
-
-
-		  @Override
-		  public Object getSource() {
-		    return source;
-		  }
-
-		  @Override
-		  public Object getRawValue() {
-		    return rawValue;
-		  }
-
-		  @Override
-		  public String getKey() {
-		    return key;
-		  }
-
-		}
+	 
 }

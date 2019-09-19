@@ -16,8 +16,7 @@
        "org.yaml.snakeyaml"
        ],
       "exportedResources": [
-        "META-INF/services/org.mule.runtime.config.api.dsl.model.properties.ConfigurationPropertiesProviderFactory",
-        "org.mule.runtime.config.api.dsl.model.properties.*"
+        "META-INF/services/org.mule.runtime.config.api.dsl.model.properties.ConfigurationPropertiesProviderFactory"
        ]
     }
   },
