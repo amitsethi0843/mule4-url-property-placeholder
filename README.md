@@ -4,7 +4,7 @@ To use this :-
 3) Inject it in your application 
 ```xml
 	<dependency>
-		<groupId>com.centric.mule4</groupId>
+		<groupId>com.rwc.mule4</groupId>
 		<artifactId>url-properties-placeholder</artifactId>
 		<version>2.5.0-SNAPSHOT</version>
 		<classifier>mule-plugin</classifier>
